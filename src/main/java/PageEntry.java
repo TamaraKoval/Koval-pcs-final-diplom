@@ -14,8 +14,21 @@ public class PageEntry implements Comparable<PageEntry> {
         return Integer.compare(o.getCount(), this.getCount());
     }
 
+    public boolean onSamePage(PageEntry pageEntryToCompare) {
+        return this.pdfName.equals(pageEntryToCompare.pdfName) &&
+                this.page == pageEntryToCompare.page;
+    }
+
     public int getCount() {
         return count;
+    }
+
+    public String getPdfName() {
+        return pdfName;
+    }
+
+    public int getPage() {
+        return page;
     }
 
     @Override

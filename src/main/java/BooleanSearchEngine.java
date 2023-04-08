@@ -31,7 +31,11 @@ public class BooleanSearchEngine implements SearchEngine {
                     }
 
                     for (String word : freqs.keySet()) {
-                        PageEntry currentPageEntry = new PageEntry(pdf.getName(), i, freqs.get(word));
+                        PageEntry currentPageEntry = new PageEntryBuilder()
+                                .setPdfName(pdf.getName())
+                                .setPage(i)
+                                .setCount(freqs.get(word))
+                                .build();
                         List<PageEntry> currentList;
                         if (wordsCount.containsKey(word)) {
                             currentList = wordsCount.get(word);
@@ -48,8 +52,31 @@ public class BooleanSearchEngine implements SearchEngine {
     }
 
     @Override
-    public List<PageEntry> search(String word) {
-        String searchWord = word.toLowerCase();
-        return wordsCount.get(searchWord);
+    public List<PageEntry> search(String text) {
+        String[] searchList = text.toLowerCase().split("\\P{IsAlphabetic}+");
+        if (searchList.length == 1) {
+            String word = searchList[0];
+            return wordsCount.get(word);
+        } else {
+            List<PageEntry> sumList = new ArrayList<>();
+            for (String word : searchList) {
+                sumList.addAll(wordsCount.get(word));
+            }
+            for (int i = 0; i < sumList.size() - 1; i++) {
+                for (int j = i + 1; j < sumList.size(); j++) {
+                    if (sumList.get(i).onSamePage(sumList.get(j))) {
+                        PageEntry newPageEntry = new PageEntryBuilder()
+                                .setPdfName(sumList.get(i).getPdfName())
+                                .setPage(sumList.get(i).getPage())
+                                .setCount(sumList.get(i).getPage() + sumList.get(j).getPage())
+                                .build();
+                        sumList.remove(j);
+                        sumList.remove(i);
+                        sumList.add(i, newPageEntry);
+                    }
+                }
+            }
+            return sumList;
+        }
     }
 }
