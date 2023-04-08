@@ -9,8 +9,11 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Gson gson = new Gson();
 
+        File stopFile = new File("stop-ru.txt");
+        StopList stopList = new StopList(stopFile);
+
         File dir = new File("pdfs");
-        BooleanSearchEngine searchEngine = new BooleanSearchEngine(dir);
+        BooleanSearchEngine searchEngine = new BooleanSearchEngine(dir, stopList);
 
         try (ServerSocket serverSocket = new ServerSocket(8989)) {
             while (true) {

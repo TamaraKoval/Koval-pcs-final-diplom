@@ -10,7 +10,7 @@ public class Client {
 
     public static void main(String[] args) {
 
-        String message = "бизнес, код";
+        String message = "в бизнес";
 
         try (Socket socket = new Socket("localhost", PORT);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);

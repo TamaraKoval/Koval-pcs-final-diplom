@@ -9,8 +9,18 @@ import java.util.*;
 
 public class BooleanSearchEngine implements SearchEngine {
     private Map<String, List<PageEntry>> wordsCount;
+    private StopList stopList;
 
     public BooleanSearchEngine(File pdfsDir) throws IOException {
+        wordsCount = wordsCountFromPdf(pdfsDir);
+    }
+
+    public BooleanSearchEngine(File pdfsDir, StopList stopList) throws IOException {
+        wordsCount = wordsCountFromPdf(pdfsDir);
+        this.stopList = stopList;
+    }
+
+    private Map<String, List<PageEntry>> wordsCountFromPdf(File pdfsDir) throws IOException {
         wordsCount = new HashMap<>();
 
         if (pdfsDir.isDirectory()) {
@@ -49,15 +59,31 @@ public class BooleanSearchEngine implements SearchEngine {
                 doc.close();
             }
         }
+        return wordsCount;
     }
 
     @Override
     public List<PageEntry> search(String text) {
-        String[] searchList = text.toLowerCase().split("\\P{IsAlphabetic}+");
-        if (searchList.length == 1) {
-            String word = searchList[0];
-            return wordsCount.get(word);
+        String[] lowerList = text.toLowerCase().split("\\P{IsAlphabetic}+");
+        if (stopList == null) {
+            List<String> searchList = Arrays.asList(lowerList);
+            return searchInCorrectList(searchList);
         } else {
+            List<String> searchList = new ArrayList<>();
+            for (String word : lowerList) {
+                if (!stopList.isInStopList(word)) {
+                    searchList.add(word);
+                }
+            }
+            return searchInCorrectList(searchList);
+        }
+    }
+
+    private List<PageEntry> searchInCorrectList(List<String> searchList) {
+        if (searchList.size() == 1) {
+            String word = searchList.get(0);
+            return wordsCount.get(word);
+        } else if (searchList.size() > 1) {
             List<PageEntry> sumList = new ArrayList<>();
             for (String word : searchList) {
                 sumList.addAll(wordsCount.get(word));
@@ -78,5 +104,6 @@ public class BooleanSearchEngine implements SearchEngine {
             }
             return sumList;
         }
+        return null;
     }
 }
